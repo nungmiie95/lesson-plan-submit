@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบส่งแผนการสอน — สังคมศึกษาฯ โรงเรียนบ้านนาดินดำ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:       #1a2f4e;
+  --navy-h:     #243e63;
+  --gold:       #c8921a;
+  --gold-lt:    #e8b84b;
+  --cream:      #f6f2eb;
+  --white:      #ffffff;
+  --g50:        #f8f7f4;
+  --g100:       #edeae3;
+  --g300:       #b8b4ac;
+  --g500:       #7a756d;
+  --g700:       #3e3b35;
+  --sent-c:     #b45309;
+  --sent-bg:    #fef3c7;
+  --ok-c:       #047857;
+  --ok-bg:      #d1fae5;
+  --none-c:     #9ca3af;
+  --none-bg:    #f3f4f6;
+  --red:        #dc2626;
+  --r:          10px;
+  --tr:         0.18s ease;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Sarabun',sans-serif;
+  background:var(--cream);
+  color:var(--g700);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.65;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── HEADER ── */
+.hdr{
+  background:var(--navy);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  position:sticky;
+  top:0;
+  z-index:200;
+  box-shadow:0 2px 10px rgba(0,0,0,.22);
+}
+.hdr-left{display:flex;align-items:center;gap:13px;}
+.hdr-icon{
+  width:42px;height:42px;
+  background:var(--gold);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.hdr h1{color:#fff;font-size:14px;font-weight:700;line-height:1.35;}
+.hdr p {color:var(--gold-lt);font-size:11.5px;margin-top:1px;}
+
+/* ปุ่มครูพี่เลี้ยง — subtle มาก อยู่มุมขวา */
+.btn-tc-entry{
+  font-family:'Sarabun',sans-serif;
+  font-size:12px;
+  color:rgba(255,255,255,.4);
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:6px;
+  padding:6px 12px;
+  cursor:pointer;
+  transition:var(--tr);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.btn-tc-entry:hover{
+  color:rgba(255,255,255,.75);
+  background:rgba(255,255,255,.12);
+  border-color:rgba(255,255,255,.28);
+}
+
+/* ── CONFIG WARN ── */
+.cfg-warn{
+  display:none;
+  background:#fef3c7;
+  border-left:4px solid #d97706;
+  padding:10px 20px;
+  font-size:13px;
+  color:#92400e;
+}
+.cfg-warn.show{display:block;}
+
+/* ── MAIN ── */
+.main{
+  max-width:720px;
+  width:100%;
+  margin:0 auto;
+  padding:24px 14px 48px;
+  flex:1;
+}
+
+/* ── PAGE VIEWS ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── CARD ── */
+.card{
+  background:var(--white);
+  border-radius:var(--r);
+  border:1px solid var(--g100);
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:0 1px 5px rgba(0,0,0,.06);
+}
+.card-title{
+  font-size:15px;font-weight:700;color:var(--navy);
+  padding-bottom:12px;margin-bottom:18px;
+  border-bottom:2px solid var(--cream);
+  display:flex;align-items:center;gap:8px;
+}
+
+/* ── FORM ── */
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:520px){.fg-grid{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+label{font-size:13px;font-weight:600;color:var(--g700);}
+label .req{color:var(--red);margin-left:2px;}
+
+select{
+  font-family:'Sarabun',sans-serif;
+  font-size:14px;
+  padding:10px 34px 10px 12px;
+  border:1.5px solid var(--g100);
+  border-radius:8px;
+  background:var(--g50);
+  color:var(--g700);
+  transition:var(--tr);
+  appearance:none;
+  cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a756d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+}
+select:focus{
+  outline:none;
+  border-color:var(--navy);
+  background-color:var(--white);
+  box-shadow:0 0 0 3px rgba(26,47,78,.08);
+}
+.static-field{
+  font-size:14px;padding:10px 12px;
+  background:var(--g100);border-radius:8px;
+  color:var(--g500);font-weight:600;
+  border:1.5px solid transparent;
+}
+
+/* ── FILE ZONE ── */
+.upload-zone{
+  border:2px dashed var(--g300);
+  border-radius:var(--r);
+  padding:30px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:var(--tr);
+  background:var(--g50);
+  user-select:none;
+}
+.upload-zone:hover,.upload-zone.drag{
+  border-color:var(--navy);
+  background:rgba(26,47,78,.04);
+}
+.upload-zone input{display:none;}
+.uz-icon{font-size:30px;margin-bottom:7px;}
+.uz-text{font-size:14px;color:var(--g500);}
+.uz-text strong{color:var(--navy);}
+.uz-hint{font-size:12px;color:var(--g300);margin-top:3px;}
+.uz-file{font-size:13px;color:var(--ok-c);font-weight:600;margin-top:7px;}
+
+/* ── BUTTONS ── */
+.btn{
+  font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;
+  padding:11px 26px;border-radius:8px;border:none;
+  cursor:pointer;transition:var(--tr);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-h);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-ghost{
+  background:none;color:var(--g500);
+  border:1.5px solid var(--g100);
+  font-size:13px;padding:7px 14px;
+}
+.btn-ghost:hover{border-color:var(--g300);color:var(--g700);}
+.btn-sm-ok{
+  font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;
+  padding:5px 10px;border-radius:6px;border:none;
+  background:var(--ok-c);color:#fff;
+  cursor:pointer;transition:var(--tr);
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.btn-sm-ok:hover{opacity:.85;}
+.btn-sm-ok:disabled{opacity:.5;cursor:not-allowed;}
+.btn-sm-edit{
+  font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;
+  padding:5px 10px;border-radius:6px;border:none;
+  background:#dc2626;color:#fff;
+  cursor:pointer;transition:var(--tr);
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.btn-sm-edit:hover{opacity:.85;}
+.btn-sm-edit:disabled{opacity:.5;cursor:not-allowed;}
+.btn-file{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:600;padding:4px 9px;border-radius:6px;
+  background:var(--navy);color:#fff;
+  text-decoration:none;transition:var(--tr);white-space:nowrap;
+}
+.btn-file:hover{opacity:.85;}
+.btn-sm-del{
+  font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;
+  padding:5px 10px;border-radius:6px;border:none;
+  background:#fee2e2;color:#b91c1c;
+  cursor:pointer;transition:var(--tr);
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.btn-sm-del:hover{background:#fecaca;}
+.btn-sm-del:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── BADGE ── */
+.badge{
+  display:inline-block;padding:3px 10px;
+  border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;
+}
+.b-sent {background:var(--sent-bg); color:var(--sent-c);}
+.b-ok   {background:var(--ok-bg);   color:var(--ok-c);}
+.b-none {background:var(--none-bg); color:var(--none-c);}
+.b-edit {background:#fee2e2;        color:#b91c1c;}
+.b-pass {background:#d1fae5;        color:#065f46;}
+
+/* ── SUMMARY ── */
+.summary{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.sum-box{
+  flex:1;min-width:110px;
+  background:var(--g50);border:1px solid var(--g100);
+  border-radius:8px;padding:10px 14px;text-align:center;
+}
+.sum-num{font-size:22px;font-weight:800;color:var(--navy);}
+.sum-lbl{font-size:11.5px;color:var(--g500);margin-top:1px;}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.fbar label{font-size:13px;font-weight:600;}
+.fbar select{
+  font-size:13px;
+  padding:6px 30px 6px 11px;
+  background-color:var(--white);
+  border:1.5px solid var(--g100);
+  border-radius:8px;cursor:pointer;
+}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--g100);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead{background:var(--navy);color:#fff;}
+thead th{padding:11px 13px;text-align:center;font-weight:600;white-space:nowrap;}
+tbody tr:nth-child(even){background:var(--g50);}
+tbody tr:hover{background:rgba(26,47,78,.04);}
+tbody td{
+  padding:9px 13px;text-align:center;
+  border-bottom:1px solid var(--g100);
+  vertical-align:middle;
+}
+td.wk{font-weight:700;color:var(--navy);width:85px;}
+td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
+.cell-in{display:flex;flex-direction:column;gap:4px;align-items:center;}
+.cell-acts{display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;}
+.sub-dt{font-size:11px;color:var(--g500);}
+
+/* ── PIN PAGE ── */
+.pin-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:60px 20px;
+  min-height:55vh;
+}
+.pin-card{
+  background:var(--white);
+  border-radius:14px;
+  border:1px solid var(--g100);
+  padding:36px 32px;
+  width:100%;max-width:320px;
+  text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.1);
+}
+.pin-icon{font-size:38px;margin-bottom:12px;}
+.pin-card h2{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.pin-card p {font-size:13px;color:var(--g500);margin-bottom:20px;}
+.pin-input{
+  width:100%;text-align:center;
+  font-size:24px;letter-spacing:12px;font-weight:700;
+  color:var(--navy);padding:12px;
+  border:2px solid var(--g100);border-radius:10px;
+  margin-bottom:14px;
+  font-family:'Sarabun',sans-serif;
+  transition:var(--tr);
+}
+.pin-input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,47,78,.08);}
+.pin-err{color:var(--red);font-size:13px;margin-bottom:12px;display:none;}
+.pin-err.show{display:block;}
+.pin-back{
+  font-size:13px;color:var(--g500);
+  margin-top:14px;cursor:pointer;
+  text-decoration:underline;display:inline-block;
+}
+.pin-back:hover{color:var(--navy);}
+
+/* ── TEACHER HEADER ── */
+.tc-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-wrap:wrap;gap:10px;
+}
+.tc-hdr h2{font-size:15px;font-weight:700;color:var(--navy);}
+
+/* ── SPIN / TOAST ── */
+.spin{
+  display:inline-block;width:13px;height:13px;
+  border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;border-radius:50%;
+  animation:rot .65s linear infinite;
+}
+@keyframes rot{to{transform:rotate(360deg);}}
+
+#toasts{
+  position:fixed;bottom:20px;right:20px;
+  z-index:999;display:flex;flex-direction:column;gap:8px;
+}
+.toast{
+  background:var(--navy);color:#fff;
+  padding:11px 16px;border-radius:10px;
+  font-size:13px;font-weight:500;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+  animation:slideIn .25s ease;max-width:290px;
+}
+.toast.ok {background:var(--ok-c);}
+.toast.err{background:var(--red);}
+@keyframes slideIn{
+  from{transform:translateX(110%);opacity:0;}
+  to  {transform:translateX(0);   opacity:1;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-icon">📋</div>
+    <div>
+      <h1>ระบบส่งแผนการสอน — นักศึกษาฝึกประสบการณ์วิชาชีพครู</h1>
+      <p>กลุ่มสาระสังคมศึกษา ศาสนา และวัฒนธรรม &nbsp;·&nbsp; โรงเรียนบ้านนาดินดำ &nbsp;·&nbsp; ปีการศึกษา 2569</p>
+    </div>
+  </div>
+  <!-- ปุ่มนี้ตั้งใจให้ subtle ไม่ดึงความสนใจ -->
+  <button class="btn-tc-entry" onclick="gotoPin()">ครูพี่เลี้ยง</button>
+</header>
+
+<!-- CONFIG WARNING -->
+<div class="cfg-warn" id="cfgWarn">
+  ⚠️ ยังไม่ได้ตั้งค่า GAS_URL — แก้ไขค่า <code>GAS_URL</code> ในไฟล์ index.html ก่อนใช้งาน
+</div>
+
+<main class="main">
+
+  <!-- ══ PAGE : นักศึกษา (DEFAULT) ══ -->
+  <div class="page active" id="page-student">
+
+    <div class="card">
+      <div class="card-title">📤 อัพโหลดแผนการสอน</div>
+      <div class="fg-grid">
+
+        <div class="fg">
+          <label>ชื่อนักศึกษา <span class="req">*</span></label>
+          <select id="st-name" onchange="onNameChange()">
+            <option value="">— เลือกชื่อ —</option>
+            <option>นายชิติพัทธ์ จำปามี</option>
+            <option>นายเกียรติชัย หมื่นสม</option>
+            <option>นางสาวถิรวรรณ สายสุริยา</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label>สัปดาห์ที่ <span class="req">*</span></label>
+          <select id="st-week">
+            <option value="">— เลือกสัปดาห์ —</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label>ภาคเรียน</label>
+          <div class="static-field">ภาคเรียนที่ 1</div>
+        </div>
+
+        <div class="fg">
+          <label>ปีการศึกษา</label>
+          <div class="static-field">2569</div>
+        </div>
+
+        <div class="fg full">
+          <label>ไฟล์แผนการสอน <span class="req">*</span></label>
+          <div class="upload-zone" id="uzBox"
+               onclick="document.getElementById('fileInput').click()"
+               ondragover="uzOver(event)"
+               ondragleave="uzLeave()"
+               ondrop="uzDrop(event)">
+            <input type="file" id="fileInput" accept=".docx,.pdf" onchange="filePicked(event)">
+            <div class="uz-icon">📄</div>
+            <div class="uz-text"><strong>คลิกเลือกไฟล์</strong> หรือลากวางที่นี่</div>
+            <div class="uz-hint">รับเฉพาะ .docx และ .pdf เท่านั้น</div>
+            <div class="uz-file" id="uzFileName"></div>
+          </div>
+        </div>
+
+      </div>
+      <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+        <button class="btn btn-primary" id="submitBtn" onclick="doUpload()">
+          📤 ส่งแผนการสอน
+        </button>
+      </div>
+    </div>
+
+    <!-- ตารางสถานะ — แสดงหลังเลือกชื่อ -->
+    <div class="card" id="stCard" style="display:none;">
+      <div class="card-title">
+        📊 สถานะการส่ง — <span id="stNameLabel" style="color:var(--gold);"></span>
+      </div>
+      <div class="fbar">
+        <label>ภาคเรียน :</label>
+        <select id="st-sem-filter" onchange="renderStTable()">
+          <option value="1">ภาคเรียนที่ 1</option>
+          <option value="2">ภาคเรียนที่ 2</option>
+        </select>
+      </div>
+      <div class="summary" id="stSummary"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>สัปดาห์ที่</th>
+              <th>วันที่ส่ง</th>
+              <th>สถานะ</th>
+              <th>ไฟล์</th>
+              <th>ลบ</th>
+            </tr>
+          </thead>
+          <tbody id="stTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ PAGE : กรอก PIN ══ -->
+  <div class="page" id="page-pin">
+    <div class="pin-wrap">
+      <div class="pin-card">
+        <div class="pin-icon">🔒</div>
+        <h2>ครูพี่เลี้ยง</h2>
+        <p>กรอก PIN เพื่อเข้าสู่หน้าตรวจสอบ</p>
+        <input type="password" class="pin-input" id="pinInput"
+               maxlength="4" placeholder="••••"
+               onkeydown="if(event.key==='Enter')checkPin()">
+        <div class="pin-err" id="pinErr">PIN ไม่ถูกต้อง กรุณาลองใหม่</div>
+        <button class="btn btn-primary" onclick="checkPin()" style="width:100%">ยืนยัน</button>
+        <span class="pin-back" onclick="goStudent()">← กลับหน้านักศึกษา</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE : ครูพี่เลี้ยง ══ -->
+  <div class="page" id="page-teacher">
+
+    <div class="tc-hdr">
+      <h2>📋 ภาพรวมการส่งแผนการสอน</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="fbar" style="margin:0;">
+          <label>ภาคเรียน :</label>
+          <select id="tc-sem-filter" onchange="renderTcTable()">
+            <option value="1">ภาคเรียนที่ 1</option>
+            <option value="2">ภาคเรียนที่ 2</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost" onclick="lockOut()">🔒 ออกจากระบบ</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:16px 22px;">
+      <div class="summary" id="tcSummary"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>สัปดาห์ที่</th>
+              <th>นายชิติพัทธ์ จำปามี</th>
+              <th>นายเกียรติชัย หมื่นสม</th>
+              <th>นางสาวถิรวรรณ สายสุริยา</th>
+            </tr>
+          </thead>
+          <tbody id="tcTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<div id="toasts"></div>
+
+<script>
+// ════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxDg5XFkqlfKd9T7pvQ79ncsxs1RR7hRzMiDEYOP65RF9BpPV_DwqswnkpmbB4VGygN/exec';
+
+const CFG = {
+  students:   ['นายชิติพัทธ์ จำปามี','นายเกียรติชัย หมื่นสม','นางสาวถิรวรรณ สายสุริยา'],
+  semester:   1,
+  year:       2569,
+  totalWeeks: 20,
+  pin:        '1234'
+};
+
+let allData    = [];
+let pickedFile = null;
+let tcOpen     = false;
+
+// ── INIT ──────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE')
+    document.getElementById('cfgWarn').classList.add('show');
+
+  const sel = document.getElementById('st-week');
+  for (let i = 1; i <= CFG.totalWeeks; i++)
+    sel.innerHTML += `<option value="${i}">สัปดาห์ที่ ${i}</option>`;
+
+  fetchAll();
+});
+
+// ── PAGE NAV ──────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goStudent()  { showPage('page-student'); }
+function gotoPin() {
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinErr').classList.remove('show');
+  showPage('page-pin');
+  setTimeout(() => document.getElementById('pinInput').focus(), 80);
+}
+function lockOut() { tcOpen = false; showPage('page-student'); }
+
+// ── PIN ───────────────────────────
+function checkPin() {
+  const v = document.getElementById('pinInput').value;
+  if (v === CFG.pin) {
+    tcOpen = true;
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinErr').classList.remove('show');
+    renderTcTable();
+    showPage('page-teacher');
+    fetchAll();
+  } else {
+    document.getElementById('pinErr').classList.add('show');
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+
+// ── FILE ──────────────────────────
+function uzOver(e)  { e.preventDefault(); document.getElementById('uzBox').classList.add('drag'); }
+function uzLeave()  { document.getElementById('uzBox').classList.remove('drag'); }
+function uzDrop(e)  {
+  e.preventDefault();
+  document.getElementById('uzBox').classList.remove('drag');
+  if (e.dataTransfer.files[0]) applyFile(e.dataTransfer.files[0]);
+}
+function filePicked(e) { if (e.target.files[0]) applyFile(e.target.files[0]); }
+function applyFile(f) {
+  const ext = f.name.split('.').pop().toLowerCase();
+  if (!['docx','pdf'].includes(ext)) { toast('รับเฉพาะ .docx และ .pdf เท่านั้น','err'); return; }
+  pickedFile = f;
+  document.getElementById('uzFileName').textContent = '✓ ' + f.name;
+}
+
+// ── NAME CHANGE ───────────────────
+function onNameChange() {
+  const n = document.getElementById('st-name').value;
+  const c = document.getElementById('stCard');
+  if (n) {
+    c.style.display = 'block';
+    document.getElementById('stNameLabel').textContent = n;
+    renderStTable();
+  } else {
+    c.style.display = 'none';
+  }
+}
+
+// ── FETCH ─────────────────────────
+async function fetchAll() {
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') return;
+  try {
+    const r = await fetch(`${GAS_URL}?action=getStatus`);
+    const j = await r.json();
+    if (j.success) {
+      allData = j.data;
+      renderStTable();
+      if (tcOpen) renderTcTable();
+    }
+  } catch(e) { console.warn('fetchAll:', e); }
+}
+
+// ── UPLOAD ────────────────────────
+async function doUpload() {
+  const name = document.getElementById('st-name').value;
+  const week = document.getElementById('st-week').value;
+  if (!name)       { toast('กรุณาเลือกชื่อนักศึกษา','err'); return; }
+  if (!week)       { toast('กรุณาเลือกสัปดาห์ที่','err');   return; }
+  if (!pickedFile) { toast('กรุณาแนบไฟล์แผนการสอน','err');  return; }
+
+  const dup = allData.find(r => r.student===name && r.week==week && r.semester==CFG.semester);
+  if (dup) { toast(`สัปดาห์ที่ ${week} ส่งแล้ว (${dup.status})`,'err'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> กำลังอัพโหลด...';
+
+  try {
+    const b64 = await toBase64(pickedFile);
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:'upload', student:name,
+        semester:CFG.semester, year:CFG.year,
+        week:parseInt(week),
+        fileName:pickedFile.name,
+        fileData:b64,
+        mimeType:pickedFile.type || 'application/octet-stream'
+      })
+    });
+    const j = await res.json();
+    if (j.success) {
+      toast('✅ ส่งแผนการสอนเรียบร้อย','ok');
+      pickedFile = null;
+      document.getElementById('uzFileName').textContent = '';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('st-week').value = '';
+      await fetchAll();
+    } else {
+      toast(j.error || 'เกิดข้อผิดพลาด','err');
+    }
+  } catch(e) {
+    toast('เชื่อมต่อระบบล้มเหลว กรุณาลองใหม่','err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 ส่งแผนการสอน';
+  }
+}
+
+// ── DELETE RECORD ─────────────────
+async function deleteRecord(id, btn, role) {
+  const label = role==='teacher' ? 'ลบข้อมูลนี้และไฟล์ใน Drive?' : 'ลบการส่งสัปดาห์นี้?';
+  if (!confirm(`⚠️ ${label}\nการกระทำนี้ไม่สามารถย้อนกลับได้`)) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin" style="border-top-color:#b91c1c;border-color:rgba(185,28,28,.3)"></span>';
+  try {
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      body:JSON.stringify({ action:'deleteRecord', id })
+    });
+    const j = await res.json();
+    if (j.success) { toast('🗑 ลบข้อมูลเรียบร้อย','ok'); await fetchAll(); }
+    else { toast(j.error||'เกิดข้อผิดพลาด','err'); btn.disabled=false; btn.innerHTML='🗑 ลบ'; }
+  } catch(e) {
+    toast('เชื่อมต่อระบบล้มเหลว','err');
+    btn.disabled=false; btn.innerHTML='🗑 ลบ';
+  }
+}
+async function setStatus(id, status, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      body:JSON.stringify({ action:'markChecked', id, status })
+    });
+    const j = await res.json();
+    if (j.success) {
+      toast(status==='ผ่านปริ้นส่ง' ? '✅ ผ่านปริ้นส่งแล้ว' : '✏️ ตั้งสถานะแก้ไขแล้ว','ok');
+      await fetchAll();
+    } else {
+      toast('เกิดข้อผิดพลาด','err');
+      btn.disabled=false;
+      btn.innerHTML = status==='แก้ไข' ? '✏️ แก้ไข' : '✅ ผ่านปริ้นส่ง';
+    }
+  } catch(e) {
+    toast('เชื่อมต่อระบบล้มเหลว','err');
+    btn.disabled=false;
+    btn.innerHTML = status==='แก้ไข' ? '✏️ แก้ไข' : '✅ ผ่านปริ้นส่ง';
+  }
+}
+
+// ── RENDER STUDENT TABLE ──────────
+function renderStTable() {
+  const name = document.getElementById('st-name').value;
+  const sem  = document.getElementById('st-sem-filter').value;
+  if (!name) return;
+
+  const mine    = allData.filter(r => r.student===name && r.semester==sem);
+  const checked = mine.filter(r => r.status==='ตรวจสอบแล้ว').length;
+  document.getElementById('stSummary').innerHTML = `
+    <div class="sum-box"><div class="sum-num">${mine.length}</div><div class="sum-lbl">ส่งทั้งหมด</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--ok-c)">${checked}</div><div class="sum-lbl">ตรวจสอบแล้ว</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--sent-c)">${mine.length-checked}</div><div class="sum-lbl">รอตรวจสอบ</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--none-c)">${CFG.totalWeeks-mine.length}</div><div class="sum-lbl">ยังไม่ส่ง</div></div>
+  `;
+
+  let html = '';
+  for (let w = 1; w <= CFG.totalWeeks; w++) {
+    const r = allData.find(d => d.student===name && d.week==w && d.semester==sem);
+    if (r) {
+      let badge;
+      if      (r.status==='ผ่านปริ้นส่ง') badge = `<span class="badge b-pass">✅ ผ่านปริ้นส่ง</span>`;
+      else if (r.status==='แก้ไข')         badge = `<span class="badge b-edit">✏️ แก้ไข</span>`;
+      else                                  badge = `<span class="badge b-sent">🕐 ส่งแล้ว</span>`;
+      const canDel = r.status==='ส่งแล้ว';
+      html += `<tr>
+        <td class="wk">สัปดาห์ที่ ${w}</td>
+        <td class="dt">${r.submitDate||'—'}</td>
+        <td>${badge}</td>
+        <td><a href="${r.fileUrl}" target="_blank" class="btn-file">📄 เปิดไฟล์</a></td>
+        <td>${canDel
+          ? `<button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'student')">🗑 ลบ</button>`
+          : `<span style="font-size:11px;color:var(--g300);">—</span>`
+        }</td>
+      </tr>`;
+    } else {
+      html += `<tr>
+        <td class="wk">สัปดาห์ที่ ${w}</td>
+        <td class="dt">—</td>
+        <td><span class="badge b-none">⬜ ยังไม่ส่ง</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr>`;
+    }
+  }
+  document.getElementById('stTbody').innerHTML = html;
+}
+
+// ── RENDER TEACHER TABLE ──────────
+function renderTcTable() {
+  const sem     = document.getElementById('tc-sem-filter').value;
+  const semData = allData.filter(r => r.semester==sem);
+  const total   = CFG.students.length * CFG.totalWeeks;
+  const checked = semData.filter(r => r.status==='ผ่านปริ้นส่ง').length;
+  const editing = semData.filter(r => r.status==='แก้ไข').length;
+
+  document.getElementById('tcSummary').innerHTML = `
+    <div class="sum-box"><div class="sum-num">${semData.length}</div><div class="sum-lbl">ส่งทั้งหมด</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--ok-c)">${checked}</div><div class="sum-lbl">ผ่านปริ้นส่ง</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:#b91c1c">${editing}</div><div class="sum-lbl">แก้ไข</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--sent-c)">${semData.length-checked-editing}</div><div class="sum-lbl">รอตรวจสอบ</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--none-c)">${total-semData.length}</div><div class="sum-lbl">ยังไม่ส่ง</div></div>
+  `;
+
+  let html = '';
+  for (let w = 1; w <= CFG.totalWeeks; w++) {
+    html += `<tr><td class="wk">สัปดาห์ที่ ${w}</td>`;
+    CFG.students.forEach(stu => {
+      const r = allData.find(d => d.student===stu && d.week==w && d.semester==sem);
+      if (!r) {
+        html += `<td><span class="badge b-none">⬜ ยังไม่ส่ง</span></td>`;
+      } else if (r.status==='ผ่านปริ้นส่ง') {
+        html += `<td><div class="cell-in">
+          <div class="cell-acts">
+            <span class="badge b-pass">✅ ผ่านปริ้นส่ง</span>
+            <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
+            <button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
+          </div>
+          <div class="sub-dt">${r.checkedDate||''}</div>
+        </div></td>`;
+      } else if (r.status==='แก้ไข') {
+        html += `<td><div class="cell-in">
+          <div class="cell-acts">
+            <span class="badge b-edit">✏️ แก้ไข</span>
+            <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
+            <button class="btn-sm-ok"  onclick="setStatus('${r.id}','ผ่านปริ้นส่ง',this)">✅ ผ่านปริ้นส่ง</button>
+            <button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
+          </div>
+          <div class="sub-dt">${r.checkedDate||''}</div>
+        </div></td>`;
+      } else {
+        html += `<td><div class="cell-in">
+          <div class="cell-acts">
+            <span class="badge b-sent">🕐 ส่งแล้ว</span>
+            <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
+            <button class="btn-sm-edit" onclick="setStatus('${r.id}','แก้ไข',this)">✏️ แก้ไข</button>
+            <button class="btn-sm-ok"   onclick="setStatus('${r.id}','ผ่านปริ้นส่ง',this)">✅ ผ่านปริ้นส่ง</button>
+            <button class="btn-sm-del"  onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
+          </div>
+          <div class="sub-dt">${r.submitDate||''}</div>
+        </div></td>`;
+      }
+    });
+    html += `</tr>`;
+  }
+  document.getElementById('tcTbody').innerHTML = html;
+}
+
+// ── HELPERS ───────────────────────
+function toBase64(file) {
+  return new Promise((res,rej) => {
+    const rd = new FileReader();
+    rd.onload  = e => res(e.target.result.split(',')[1]);
+    rd.onerror = rej;
+    rd.readAsDataURL(file);
+  });
+}
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>
