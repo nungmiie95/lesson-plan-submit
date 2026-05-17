@@ -271,16 +271,53 @@ select:focus{
 .tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--g100);}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead{background:var(--navy);color:#fff;}
-thead th{padding:11px 13px;text-align:center;font-weight:600;white-space:nowrap;}
-tbody tr:nth-child(even){background:var(--g50);}
-tbody tr:hover{background:rgba(26,47,78,.04);}
+thead th{padding:11px 14px;text-align:center;font-weight:600;white-space:nowrap;}
+tbody tr:hover td{background:rgba(26,47,78,.04) !important;}
 tbody td{
-  padding:9px 13px;text-align:center;
+  padding:8px 12px;text-align:center;
   border-bottom:1px solid var(--g100);
   vertical-align:middle;
 }
-td.wk{font-weight:700;color:var(--navy);width:85px;}
-td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
+
+/* สัปดาห์ cell — พื้นหลังแยกชัด */
+.wk-cell{
+  background:var(--navy);
+  color:#fff;
+  text-align:center;
+  vertical-align:middle;
+  width:68px;
+  border-bottom:2px solid rgba(255,255,255,.12) !important;
+  border-right:2px solid rgba(255,255,255,.1);
+}
+.wk-num{
+  font-size:18px;font-weight:800;
+  line-height:1;
+}
+.wk-lbl{
+  font-size:10px;font-weight:400;
+  color:rgba(255,255,255,.6);
+  margin-top:2px;letter-spacing:.5px;
+}
+
+/* แถวสลับตามกลุ่มสัปดาห์ */
+tr.g-odd  td:not(.wk-cell){background:#ffffff;}
+tr.g-even td:not(.wk-cell){background:#f4f6fb;}
+tr.g-odd  + tr.g-even td:not(.wk-cell),
+tr.g-even + tr.g-odd  td:not(.wk-cell){
+  border-top:1px solid var(--g100);
+}
+
+/* tag วิชา */
+.subj-tag{
+  display:inline-block;
+  font-size:12px;font-weight:600;
+  padding:3px 9px;border-radius:5px;
+  white-space:nowrap;text-align:left;
+}
+.subj-soc{background:#e0e7ff;color:#3730a3;}   /* สังคมศึกษา */
+.subj-his{background:#fef3c7;color:#92400e;}   /* ประวัติศาสตร์ */
+
+td.dt{font-size:11.5px;color:var(--g500);white-space:nowrap;}
 .cell-in{display:flex;flex-direction:column;gap:4px;align-items:center;}
 .cell-acts{display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap;}
 .sub-dt{font-size:11px;color:var(--g500);}
@@ -400,6 +437,13 @@ td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
         </div>
 
         <div class="fg">
+          <label>รายวิชา <span class="req">*</span></label>
+          <select id="st-subject" disabled>
+            <option value="">— เลือกชื่อก่อน —</option>
+          </select>
+        </div>
+
+        <div class="fg">
           <label>สัปดาห์ที่ <span class="req">*</span></label>
           <select id="st-week">
             <option value="">— เลือกสัปดาห์ —</option>
@@ -450,6 +494,10 @@ td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
           <option value="1">ภาคเรียนที่ 1</option>
           <option value="2">ภาคเรียนที่ 2</option>
         </select>
+        <label style="margin-left:8px;">รายวิชา :</label>
+        <select id="st-subj-filter" onchange="renderStTable()">
+          <option value="">— ทุกวิชา —</option>
+        </select>
       </div>
       <div class="summary" id="stSummary"></div>
       <div class="tbl-wrap">
@@ -457,6 +505,7 @@ td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
           <thead>
             <tr>
               <th>สัปดาห์ที่</th>
+              <th>รายวิชา</th>
               <th>วันที่ส่ง</th>
               <th>สถานะ</th>
               <th>ไฟล์</th>
@@ -499,6 +548,10 @@ td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
             <option value="1">ภาคเรียนที่ 1</option>
             <option value="2">ภาคเรียนที่ 2</option>
           </select>
+          <label style="margin-left:8px;">รายวิชา :</label>
+          <select id="tc-subj-filter" onchange="renderTcTable()">
+            <option value="">— ทุกวิชา —</option>
+          </select>
         </div>
         <button class="btn btn-ghost" onclick="lockOut()">🔒 ออกจากระบบ</button>
       </div>
@@ -511,9 +564,9 @@ td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
           <thead>
             <tr>
               <th>สัปดาห์ที่</th>
-              <th>นายชิติพัทธ์ จำปามี</th>
-              <th>นายเกียรติชัย หมื่นสม</th>
-              <th>นางสาวถิรวรรณ สายสุริยา</th>
+              <th>รายวิชา</th>
+              <th>นักศึกษา</th>
+              <th>สถานะ / การดำเนินการ</th>
             </tr>
           </thead>
           <tbody id="tcTbody"></tbody>
@@ -531,10 +584,23 @@ td.dt{font-size:12px;color:var(--g500);white-space:nowrap;}
 // ════════════════════════════════════
 //  CONFIG
 // ════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxDg5XFkqlfKd9T7pvQ79ncsxs1RR7hRzMiDEYOP65RF9BpPV_DwqswnkpmbB4VGygN/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwS5IoobAmMw2CjF-85ZCaHRnjCELqWxdaDwXIhQnxCSg8Z94q3YGSTZMGAf3_HR28/exec';
 
 const CFG = {
   students:   ['นายชิติพัทธ์ จำปามี','นายเกียรติชัย หมื่นสม','นางสาวถิรวรรณ สายสุริยา'],
+  subjects: {
+    'นายชิติพัทธ์ จำปามี':     ['สังคมศึกษา ป.1','ประวัติศาสตร์ ป.1','สังคมศึกษา ป.6','ประวัติศาสตร์ ป.6'],
+    'นายเกียรติชัย หมื่นสม':   ['สังคมศึกษา ป.2','ประวัติศาสตร์ ป.2','สังคมศึกษา ป.5','ประวัติศาสตร์ ป.5'],
+    'นางสาวถิรวรรณ สายสุริยา': ['สังคมศึกษา ป.3','ประวัติศาสตร์ ป.3','สังคมศึกษา ป.4','ประวัติศาสตร์ ป.4']
+  },
+  allSubjects: [
+    'สังคมศึกษา ป.1','ประวัติศาสตร์ ป.1',
+    'สังคมศึกษา ป.2','ประวัติศาสตร์ ป.2',
+    'สังคมศึกษา ป.3','ประวัติศาสตร์ ป.3',
+    'สังคมศึกษา ป.4','ประวัติศาสตร์ ป.4',
+    'สังคมศึกษา ป.5','ประวัติศาสตร์ ป.5',
+    'สังคมศึกษา ป.6','ประวัติศาสตร์ ป.6'
+  ],
   semester:   1,
   year:       2569,
   totalWeeks: 20,
@@ -553,6 +619,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('st-week');
   for (let i = 1; i <= CFG.totalWeeks; i++)
     sel.innerHTML += `<option value="${i}">สัปดาห์ที่ ${i}</option>`;
+
+  // populate teacher subject filter
+  const tcSubj = document.getElementById('tc-subj-filter');
+  CFG.allSubjects.forEach(s => {
+    tcSubj.innerHTML += `<option value="${s}">${s}</option>`;
+  });
 
   fetchAll();
 });
@@ -606,14 +678,24 @@ function applyFile(f) {
 
 // ── NAME CHANGE ───────────────────
 function onNameChange() {
-  const n = document.getElementById('st-name').value;
-  const c = document.getElementById('stCard');
+  const n    = document.getElementById('st-name').value;
+  const subSel = document.getElementById('st-subject');
+  const card = document.getElementById('stCard');
+
+  // reset subject dropdown
+  subSel.innerHTML = '<option value="">— เลือกรายวิชา —</option>';
   if (n) {
-    c.style.display = 'block';
+    CFG.subjects[n].forEach(s => {
+      subSel.innerHTML += `<option value="${s}">${s}</option>`;
+    });
+    subSel.disabled = false;
+    card.style.display = 'block';
     document.getElementById('stNameLabel').textContent = n;
     renderStTable();
   } else {
-    c.style.display = 'none';
+    subSel.disabled = true;
+    subSel.innerHTML = '<option value="">— เลือกชื่อก่อน —</option>';
+    card.style.display = 'none';
   }
 }
 
@@ -633,14 +715,16 @@ async function fetchAll() {
 
 // ── UPLOAD ────────────────────────
 async function doUpload() {
-  const name = document.getElementById('st-name').value;
-  const week = document.getElementById('st-week').value;
+  const name    = document.getElementById('st-name').value;
+  const subject = document.getElementById('st-subject').value;
+  const week    = document.getElementById('st-week').value;
   if (!name)       { toast('กรุณาเลือกชื่อนักศึกษา','err'); return; }
+  if (!subject)    { toast('กรุณาเลือกรายวิชา','err');       return; }
   if (!week)       { toast('กรุณาเลือกสัปดาห์ที่','err');   return; }
   if (!pickedFile) { toast('กรุณาแนบไฟล์แผนการสอน','err');  return; }
 
-  const dup = allData.find(r => r.student===name && r.week==week && r.semester==CFG.semester);
-  if (dup) { toast(`สัปดาห์ที่ ${week} ส่งแล้ว (${dup.status})`,'err'); return; }
+  const dup = allData.find(r => r.student===name && r.subject===subject && r.week==week && r.semester==CFG.semester);
+  if (dup) { toast(`${subject} สัปดาห์ที่ ${week} ส่งแล้ว (${dup.status})`,'err'); return; }
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
@@ -651,7 +735,7 @@ async function doUpload() {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({
-        action:'upload', student:name,
+        action:'upload', student:name, subject,
         semester:CFG.semester, year:CFG.year,
         week:parseInt(week),
         fileName:pickedFile.name,
@@ -727,43 +811,64 @@ function renderStTable() {
   const sem  = document.getElementById('st-sem-filter').value;
   if (!name) return;
 
-  const mine    = allData.filter(r => r.student===name && r.semester==sem);
-  const checked = mine.filter(r => r.status==='ตรวจสอบแล้ว').length;
+  // อัปเดต subject filter dropdown
+  const subjSel  = document.getElementById('st-subj-filter');
+  const prevSubj = subjSel.value;
+  subjSel.innerHTML = '<option value="">— ทุกวิชา —</option>';
+  CFG.subjects[name].forEach(s => {
+    subjSel.innerHTML += `<option value="${s}" ${s===prevSubj?'selected':''}>${s}</option>`;
+  });
+
+  const subjFilter = subjSel.value;
+  const mySubjects = subjFilter ? [subjFilter] : CFG.subjects[name];
+  const mine       = allData.filter(r => r.student===name && r.semester==sem && mySubjects.includes(r.subject));
+  const total      = mySubjects.length * CFG.totalWeeks;
+
   document.getElementById('stSummary').innerHTML = `
     <div class="sum-box"><div class="sum-num">${mine.length}</div><div class="sum-lbl">ส่งทั้งหมด</div></div>
-    <div class="sum-box"><div class="sum-num" style="color:var(--ok-c)">${checked}</div><div class="sum-lbl">ตรวจสอบแล้ว</div></div>
-    <div class="sum-box"><div class="sum-num" style="color:var(--sent-c)">${mine.length-checked}</div><div class="sum-lbl">รอตรวจสอบ</div></div>
-    <div class="sum-box"><div class="sum-num" style="color:var(--none-c)">${CFG.totalWeeks-mine.length}</div><div class="sum-lbl">ยังไม่ส่ง</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--ok-c)">${mine.filter(r=>r.status==='ผ่านปริ้นส่ง').length}</div><div class="sum-lbl">ผ่านปริ้นส่ง</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:#b91c1c">${mine.filter(r=>r.status==='แก้ไข').length}</div><div class="sum-lbl">แก้ไข</div></div>
+    <div class="sum-box"><div class="sum-num" style="color:var(--none-c)">${total-mine.length}</div><div class="sum-lbl">ยังไม่ส่ง</div></div>
   `;
 
   let html = '';
   for (let w = 1; w <= CFG.totalWeeks; w++) {
-    const r = allData.find(d => d.student===name && d.week==w && d.semester==sem);
-    if (r) {
-      let badge;
-      if      (r.status==='ผ่านปริ้นส่ง') badge = `<span class="badge b-pass">✅ ผ่านปริ้นส่ง</span>`;
-      else if (r.status==='แก้ไข')         badge = `<span class="badge b-edit">✏️ แก้ไข</span>`;
-      else                                  badge = `<span class="badge b-sent">🕐 ส่งแล้ว</span>`;
-      const canDel = r.status==='ส่งแล้ว';
-      html += `<tr>
-        <td class="wk">สัปดาห์ที่ ${w}</td>
-        <td class="dt">${r.submitDate||'—'}</td>
-        <td>${badge}</td>
-        <td><a href="${r.fileUrl}" target="_blank" class="btn-file">📄 เปิดไฟล์</a></td>
-        <td>${canDel
-          ? `<button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'student')">🗑 ลบ</button>`
-          : `<span style="font-size:11px;color:var(--g300);">—</span>`
-        }</td>
-      </tr>`;
-    } else {
-      html += `<tr>
-        <td class="wk">สัปดาห์ที่ ${w}</td>
-        <td class="dt">—</td>
-        <td><span class="badge b-none">⬜ ยังไม่ส่ง</span></td>
-        <td>—</td>
-        <td>—</td>
-      </tr>`;
-    }
+    const grp = w % 2 === 1 ? 'g-odd' : 'g-even';
+    mySubjects.forEach((sub, idx) => {
+      const r = allData.find(d => d.student===name && d.week==w && d.semester==sem && d.subject===sub);
+      const subjCls = sub.startsWith('สังคม') ? 'subj-soc' : 'subj-his';
+      const wkCell  = idx === 0
+        ? `<td class="wk-cell" rowspan="${mySubjects.length}">
+             <div class="wk-num">${w}</div>
+             <div class="wk-lbl">สัปดาห์</div>
+           </td>` : '';
+
+      if (r) {
+        let badge;
+        if      (r.status==='ผ่านปริ้นส่ง') badge = `<span class="badge b-pass">✅ ผ่านปริ้นส่ง</span>`;
+        else if (r.status==='แก้ไข')         badge = `<span class="badge b-edit">✏️ แก้ไข</span>`;
+        else                                  badge = `<span class="badge b-sent">🕐 ส่งแล้ว</span>`;
+        const canDel = (r.status==='ส่งแล้ว' || r.status==='แก้ไข');
+        const note   = r.status==='แก้ไข'
+          ? `<div style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:3px;">⚠️ กรุณาลบแล้วส่งใหม่</div>` : '';
+        html += `<tr class="${grp}">
+          ${wkCell}
+          <td style="text-align:left;"><span class="subj-tag ${subjCls}">${sub}</span></td>
+          <td class="dt">${r.submitDate||'—'}</td>
+          <td>${badge}${note}</td>
+          <td><a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a></td>
+          <td>${canDel?`<button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'student')">🗑</button>`:`<span style="color:var(--g300);">—</span>`}</td>
+        </tr>`;
+      } else {
+        html += `<tr class="${grp}">
+          ${wkCell}
+          <td style="text-align:left;"><span class="subj-tag ${subjCls}">${sub}</span></td>
+          <td class="dt">—</td>
+          <td><span class="badge b-none">⬜ ยังไม่ส่ง</span></td>
+          <td>—</td><td>—</td>
+        </tr>`;
+      }
+    });
   }
   document.getElementById('stTbody').innerHTML = html;
 }
@@ -771,10 +876,16 @@ function renderStTable() {
 // ── RENDER TEACHER TABLE ──────────
 function renderTcTable() {
   const sem     = document.getElementById('tc-sem-filter').value;
-  const semData = allData.filter(r => r.semester==sem);
-  const total   = CFG.students.length * CFG.totalWeeks;
-  const checked = semData.filter(r => r.status==='ผ่านปริ้นส่ง').length;
-  const editing = semData.filter(r => r.status==='แก้ไข').length;
+  const subjFilter = document.getElementById('tc-subj-filter').value;
+
+  // หา student ที่สอนวิชานี้
+  const ownerOf = sub => CFG.students.find(s => CFG.subjects[s].includes(sub));
+
+  const subjects  = subjFilter ? [subjFilter] : CFG.allSubjects;
+  const semData   = allData.filter(r => r.semester==sem && subjects.includes(r.subject));
+  const total     = subjects.length * CFG.totalWeeks;
+  const checked   = semData.filter(r => r.status==='ผ่านปริ้นส่ง').length;
+  const editing   = semData.filter(r => r.status==='แก้ไข').length;
 
   document.getElementById('tcSummary').innerHTML = `
     <div class="sum-box"><div class="sum-num">${semData.length}</div><div class="sum-lbl">ส่งทั้งหมด</div></div>
@@ -786,44 +897,51 @@ function renderTcTable() {
 
   let html = '';
   for (let w = 1; w <= CFG.totalWeeks; w++) {
-    html += `<tr><td class="wk">สัปดาห์ที่ ${w}</td>`;
-    CFG.students.forEach(stu => {
-      const r = allData.find(d => d.student===stu && d.week==w && d.semester==sem);
+    const grp = w % 2 === 1 ? 'g-odd' : 'g-even';
+    subjects.forEach((sub, idx) => {
+      const stu  = ownerOf(sub);
+      const r    = allData.find(d => d.student===stu && d.week==w && d.semester==sem && d.subject===sub);
+      const subjCls  = sub.startsWith('สังคม') ? 'subj-soc' : 'subj-his';
+      const stuShort = stu ? stu.replace('นาย','').replace('นางสาว','').split(' ')[0] : '—';
+      const wkCell   = idx === 0
+        ? `<td class="wk-cell" rowspan="${subjects.length}">
+             <div class="wk-num">${w}</div>
+             <div class="wk-lbl">สัปดาห์</div>
+           </td>` : '';
+
+      let cell;
       if (!r) {
-        html += `<td><span class="badge b-none">⬜ ยังไม่ส่ง</span></td>`;
+        cell = `<span class="badge b-none">⬜ ยังไม่ส่ง</span>`;
       } else if (r.status==='ผ่านปริ้นส่ง') {
-        html += `<td><div class="cell-in">
-          <div class="cell-acts">
-            <span class="badge b-pass">✅ ผ่านปริ้นส่ง</span>
-            <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
-            <button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
-          </div>
-          <div class="sub-dt">${r.checkedDate||''}</div>
-        </div></td>`;
+        cell = `<div class="cell-in"><div class="cell-acts">
+          <span class="badge b-pass">✅ ผ่านปริ้นส่ง</span>
+          <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
+          <button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
+        </div><div class="sub-dt">${r.checkedDate||''}</div></div>`;
       } else if (r.status==='แก้ไข') {
-        html += `<td><div class="cell-in">
-          <div class="cell-acts">
-            <span class="badge b-edit">✏️ แก้ไข</span>
-            <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
-            <button class="btn-sm-ok"  onclick="setStatus('${r.id}','ผ่านปริ้นส่ง',this)">✅ ผ่านปริ้นส่ง</button>
-            <button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
-          </div>
-          <div class="sub-dt">${r.checkedDate||''}</div>
-        </div></td>`;
+        cell = `<div class="cell-in"><div class="cell-acts">
+          <span class="badge b-edit">✏️ แก้ไข</span>
+          <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
+          <button class="btn-sm-ok"  onclick="setStatus('${r.id}','ผ่านปริ้นส่ง',this)">✅ ผ่าน</button>
+          <button class="btn-sm-del" onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
+        </div><div class="sub-dt">${r.checkedDate||''}</div></div>`;
       } else {
-        html += `<td><div class="cell-in">
-          <div class="cell-acts">
-            <span class="badge b-sent">🕐 ส่งแล้ว</span>
-            <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
-            <button class="btn-sm-edit" onclick="setStatus('${r.id}','แก้ไข',this)">✏️ แก้ไข</button>
-            <button class="btn-sm-ok"   onclick="setStatus('${r.id}','ผ่านปริ้นส่ง',this)">✅ ผ่านปริ้นส่ง</button>
-            <button class="btn-sm-del"  onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
-          </div>
-          <div class="sub-dt">${r.submitDate||''}</div>
-        </div></td>`;
+        cell = `<div class="cell-in"><div class="cell-acts">
+          <span class="badge b-sent">🕐 ส่งแล้ว</span>
+          <a href="${r.fileUrl}" target="_blank" class="btn-file">📄</a>
+          <button class="btn-sm-edit" onclick="setStatus('${r.id}','แก้ไข',this)">✏️ แก้ไข</button>
+          <button class="btn-sm-ok"   onclick="setStatus('${r.id}','ผ่านปริ้นส่ง',this)">✅ ผ่าน</button>
+          <button class="btn-sm-del"  onclick="deleteRecord('${r.id}',this,'teacher')">🗑</button>
+        </div><div class="sub-dt">${r.submitDate||''}</div></div>`;
       }
+
+      html += `<tr class="${grp}">
+        ${wkCell}
+        <td style="text-align:left;"><span class="subj-tag ${subjCls}">${sub}</span></td>
+        <td style="font-size:12px;color:var(--g500);">${stuShort}</td>
+        <td>${cell}</td>
+      </tr>`;
     });
-    html += `</tr>`;
   }
   document.getElementById('tcTbody').innerHTML = html;
 }
